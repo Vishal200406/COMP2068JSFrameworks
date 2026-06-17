@@ -1,12 +1,127 @@
-<h1>Contact Me</h1>
+<section class="page-header">
+  <div class="container">
+    <p class="eyebrow">Contact Me</p>
 
-<p>
-  I am open to connecting about programming, web development, academic projects,
-  and entry-level technology opportunities.
-</p>
+    <h1 class="fw-bold">
+      Let’s connect about programming, web development, academic projects,
+      and technology opportunities.
+    </h1>
+  </div>
+</section>
 
-<p><strong>Email:</strong> <a href="mailto:{{portfolio.email}}">{{portfolio.email}}</a></p>
+<section class="content-section">
+  <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-5">
+        <h2 class="section-title">Get in Touch</h2>
 
-<p><strong>GitHub:</strong> <a href="{{portfolio.github}}" target="_blank">View My GitHub</a></p>
+        <p class="section-text">
+          I am open to connecting about programming practice, web development,
+          academic projects, co-op preparation, and entry-level technology
+          opportunities.
+        </p>
 
-<p><strong>LinkedIn:</strong> <a href="{{portfolio.linkedin}}" target="_blank">View My LinkedIn</a></p>
+        <p class="section-text">
+          You can reach me through email or connect with me on GitHub and
+          LinkedIn to view my progress, projects, and professional profile.
+        </p>
+
+        <div class="contact-card mt-4">
+          <h3>Contact Information</h3>
+
+          <p>
+            <strong>Name:</strong><br>
+            {{portfolio.name}}
+          </p>
+
+          <p>
+            <strong>Program:</strong><br>
+            Computer Programming, Georgian College
+          </p>
+
+          <p>
+            <strong>Email:</strong><br>
+            <a href="mailto:{{portfolio.email}}">{{portfolio.email}}</a>
+          </p>
+
+          <p>
+            <strong>GitHub:</strong><br>
+            <a href="{{portfolio.github}}" target="_blank" rel="noopener noreferrer">
+              View My GitHub Profile
+            </a>
+          </p>
+
+          <p class="mb-0">
+            <strong>LinkedIn:</strong><br>
+            <a href="{{portfolio.linkedin}}" target="_blank" rel="noopener noreferrer">
+              View My LinkedIn Profile
+            </a>
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <form class="contact-form" action="mailto:{{portfolio.email}}" method="post" enctype="text/plain">
+          <h2 class="section-title">Send a Message</h2>
+
+          <p class="section-text">
+            Use the form below to prepare a message. This form uses email
+            because the assignment does not require database storage or
+            server-side form processing.
+          </p>
+
+          <div class="mb-3">
+            <label for="name" class="form-label">Your Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Your Email</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="subject" class="form-label">Subject</label>
+            <input type="text" class="form-control" id="subject" name="subject" placeholder="Message subject" required>
+          </div>
+
+          <div class="mb-4">
+            <label for="message" class="form-label">Message</label>
+            <textarea class="form-control" id="message" name="message" rows="6" placeholder="Write your message here" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg">
+            Send Message
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section pt-0">
+  <div class="container">
+    <div class="highlight-box text-center">
+      <p class="eyebrow">Professional Links</p>
+
+      <h2 class="section-title">
+        Connect with me online
+      </h2>
+
+      <p class="section-text mx-auto" style="max-width: 740px;">
+        My GitHub and LinkedIn profiles support my portfolio by showing my
+        coding progress, academic development, and professional online presence.
+      </p>
+
+      <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+        <a href="{{portfolio.github}}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+          GitHub Profile
+        </a>
+
+        <a href="{{portfolio.linkedin}}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-lg">
+          LinkedIn Profile
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
