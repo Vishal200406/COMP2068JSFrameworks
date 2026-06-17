@@ -1,14 +1,113 @@
-<h1>{{portfolio.name}}</h1>
+<section class="hero-section">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <p class="eyebrow">Computer Programming Portfolio</p>
 
-<p>{{portfolio.role}}</p>
+        <h1 class="hero-title">
+          Hi, I’m {{portfolio.name}}.
+        </h1>
 
-<p>
-  Welcome to my personal portfolio website. I am building programming,
-  web development, and software development skills through my Computer
-  Programming studies at Georgian College.
-</p>
+        <p class="hero-text mt-4">
+          I am a Computer Programming student at Georgian College with an interest
+          in web development, software design, database systems, and practical
+          programming solutions.
+        </p>
 
-<p>
-  <a href="/projects">View My Projects</a> |
-  <a href="/contact">Contact Me</a>
-</p>
+        <p class="hero-text">
+          I enjoy building responsive websites, structured applications, and
+          projects that solve real-world problems through clean and maintainable code.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <a href="/projects" class="btn btn-primary btn-lg">View My Projects</a>
+          <a href="/contact" class="btn btn-outline-light btn-lg">Contact Me</a>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="profile-card">
+          <div class="profile-placeholder">VM</div>
+
+          <h2 class="h4 fw-bold mb-2">{{portfolio.name}}</h2>
+
+          <p class="mb-3">
+            {{portfolio.role}}
+          </p>
+
+          <p class="mb-0">
+            Building skills in JavaScript, Node.js, Express, databases,
+            and responsive web application development.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <p class="eyebrow">What I Am Building</p>
+      <h2 class="section-title">Developing practical programming skills</h2>
+      <p class="section-text mx-auto" style="max-width: 760px;">
+        My portfolio highlights my progress as a Computer Programming student
+        and shows how I am learning to design, build, and improve software
+        applications for real users.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="info-card h-100">
+          <h3>Web Development</h3>
+          <p>
+            I am learning to build responsive websites and web applications using
+            HTML, CSS, JavaScript, Node.js, Express, HBS, and Bootstrap.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="info-card h-100">
+          <h3>Software Development</h3>
+          <p>
+            My studies are helping me strengthen programming logic,
+            problem-solving, debugging, and application development skills.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="info-card h-100">
+          <h3>Database Systems</h3>
+          <p>
+            I am interested in building data-driven applications that can store,
+            manage, retrieve, and display information clearly and efficiently.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content-section pt-0">
+  <div class="container">
+    <div class="highlight-box">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <h2 class="section-title">Focused on becoming a job-ready developer</h2>
+          <p class="section-text mb-0">
+            Through my Computer Programming program and personal practice, I am
+            building a strong foundation in front-end development, back-end
+            development, database concepts, and software project structure.
+          </p>
+        </div>
+
+        <div class="col-lg-4 text-lg-end">
+          <a href="/about" class="btn btn-primary btn-lg">Learn More About Me</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
