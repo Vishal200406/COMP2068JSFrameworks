@@ -1,10 +1,80 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>{{title}}</title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="description" content="Personal portfolio website for Vishal Malhotra, a Computer Programming student at Georgian College.">
+
+  <title>{{title}} | Vishal Malhotra Portfolio</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top portfolio-navbar">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="/">VM Portfolio</a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link {{#if isHome}}active{{/if}}" href="/">Home</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {{#if isAbout}}active{{/if}}" href="/about">About Me</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {{#if isProjects}}active{{/if}}" href="/projects">Projects</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link {{#if isContact}}active{{/if}}" href="/contact">Contact Me</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main>
     {{{body}}}
-  </body>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row align-items-center gy-3">
+        <div class="col-md-6 text-center text-md-start">
+          <p class="mb-0">
+            &copy; 2026 Vishal Malhotra. Built with Node.js, Express, and HBS.
+          </p>
+        </div>
+
+        <div class="col-md-6 text-center text-md-end footer-links">
+          <a href="{{portfolio.github}}" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="{{portfolio.linkedin}}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="mailto:{{portfolio.email}}">Email</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
