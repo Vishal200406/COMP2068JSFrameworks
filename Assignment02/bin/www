@@ -1,90 +1,121 @@
 #!/usr/bin/env node
 
 /**
- * Module dependencies.
+ * Load private environment variables before importing the application
+ * or attempting to connect to MongoDB.
  */
+require('dotenv').config();
 
 var app = require('../app');
 var debug = require('debug')('assignment02:server');
 var http = require('http');
 
-/**
- * Get port from environment and store in Express.
- */
+var connectToDatabase = require('../config/database');
 
+/**
+ * Get the port from the environment and store it in Express.
+ */
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 /**
- * Create HTTP server.
+ * Create the HTTP server.
  */
-
 var server = http.createServer(app);
 
 /**
- * Listen on provided port, on all network interfaces.
+ * Register server event handlers before starting the application.
  */
-
-server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
 /**
- * Normalize a port into a number, string, or false.
+ * Connect to MongoDB before accepting web requests.
+ *
+ * The application exits when the database connection cannot be
+ * established. This prevents the website from appearing operational
+ * while its required database is unavailable.
  */
+async function startApplication() {
+  try {
+    await connectToDatabase();
 
-function normalizePort(val) {
-  var port = parseInt(val, 10);
+    console.log('MongoDB Atlas connected successfully.');
 
-  if (isNaN(port)) {
-    // named pipe
-    return val;
+    server.listen(port);
+  } catch (error) {
+    console.error('MongoDB connection failed:');
+    console.error(error.message);
+
+    process.exit(1);
+  }
+}
+
+startApplication();
+
+/**
+ * Normalize a port into a number, string, or false.
+ *
+ * @param {string} value Port supplied through the environment.
+ * @returns {number|string|boolean} Normalized port value.
+ */
+function normalizePort(value) {
+  var parsedPort = parseInt(value, 10);
+
+  if (isNaN(parsedPort)) {
+    return value;
   }
 
-  if (port >= 0) {
-    // port number
-    return port;
+  if (parsedPort >= 0) {
+    return parsedPort;
   }
 
   return false;
 }
 
 /**
- * Event listener for HTTP server "error" event.
+ * Handle HTTP server errors.
+ *
+ * @param {NodeJS.ErrnoException} error Server startup error.
  */
-
 function onError(error) {
   if (error.syscall !== 'listen') {
     throw error;
   }
 
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
+  var bind =
+    typeof port === 'string'
+      ? 'Pipe ' + port
+      : 'Port ' + port;
 
-  // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
       console.error(bind + ' requires elevated privileges');
       process.exit(1);
       break;
+
     case 'EADDRINUSE':
       console.error(bind + ' is already in use');
       process.exit(1);
       break;
+
     default:
       throw error;
   }
 }
 
 /**
- * Event listener for HTTP server "listening" event.
+ * Report that the HTTP server has started successfully.
  */
-
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
+  var address = server.address();
+
+  var bind =
+    typeof address === 'string'
+      ? 'pipe ' + address
+      : 'port ' + address.port;
+
+  console.log('TutorConnect Directory is running on ' + bind + '.');
+
   debug('Listening on ' + bind);
 }
