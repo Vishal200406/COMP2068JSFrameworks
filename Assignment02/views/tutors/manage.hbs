@@ -13,9 +13,9 @@
         </h1>
 
         <p>
-          Create and review tutor records stored in MongoDB. Editing
-          and delete-confirmation functionality will be added in the
-          remaining CRUD stages.
+          Create, review, and edit tutor records stored in MongoDB.
+          Delete-confirmation functionality will be added in the next
+          CRUD stage.
         </p>
       </div>
 
@@ -64,12 +64,11 @@
       role="alert"
     >
       <strong>
-        Create functionality is active.
+        Create and Edit functionality are active.
       </strong>
 
-      Use the Add Tutor button to create a validated MongoDB tutor
-      record. Edit and Delete controls will be activated in the
-      remaining CRUD steps.
+      Use Add Tutor to create a new record or Edit Tutor to update an
+      existing profile. Delete confirmation will be activated next.
     </div>
 
     {{#if hasTutors}}
@@ -118,6 +117,22 @@
                 </p>
 
                 <dl class="row mb-4">
+                  <dt class="col-sm-4 text-secondary">
+                    Skills
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    {{skills}}
+                  </dd>
+
+                  <dt class="col-sm-4 text-secondary">
+                    Availability
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    {{availability}}
+                  </dd>
+
                   <dt class="col-sm-4 text-secondary">
                     Contact
                   </dt>
@@ -180,13 +195,12 @@
                 <div
                   class="d-flex flex-wrap gap-2 pt-3 border-top"
                 >
-                  <button
+                  <a
                     class="btn btn-outline-primary"
-                    type="button"
-                    disabled
+                    href="/tutors/{{_id}}/edit"
                   >
                     Edit Tutor
-                  </button>
+                  </a>
 
                   <button
                     class="btn btn-outline-danger"
@@ -199,7 +213,7 @@
                   <span
                     class="align-self-center text-secondary small"
                   >
-                    Edit and Delete coming next
+                    Delete confirmation coming next
                   </span>
                 </div>
               </div>

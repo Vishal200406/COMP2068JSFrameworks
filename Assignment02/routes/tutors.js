@@ -1,4 +1,6 @@
 const express = require('express');
+const createError = require('http-errors');
+const mongoose = require('mongoose');
 
 const Tutor = require('../models/tutor');
 const authMiddleware = require('../middleware/auth');
@@ -81,7 +83,10 @@ function normalizeText(value, maximumLength) {
  */
 function normalizeTutorForm(body) {
   return {
-    name: normalizeText(body.name, 80),
+    name: normalizeText(
+      body.name,
+      80
+    ),
 
     subject: normalizeText(
       body.subject,
@@ -133,11 +138,10 @@ function normalizeTutorForm(body) {
 /**
  * Prepare tutor form data for HBS.
  *
- * Boolean properties allow HBS to restore the selected dropdown
- * options after a validation error without requiring a comparison
- * helper.
+ * Boolean properties allow HBS to restore selected dropdown values
+ * without requiring a custom comparison helper.
  *
- * @param {Object} tutorData Normalized tutor data.
+ * @param {Object} tutorData Tutor data.
  * @returns {Object} Tutor form view model.
  */
 function prepareTutorFormData(tutorData) {
@@ -205,6 +209,18 @@ function getValidationMessages(error) {
 }
 
 /**
+ * Determine whether a route parameter is a valid MongoDB ObjectId.
+ *
+ * @param {string} tutorId Tutor record ID.
+ * @returns {boolean} True when the ID has a valid ObjectId format.
+ */
+function isValidTutorId(tutorId) {
+  return mongoose.Types.ObjectId.isValid(
+    tutorId
+  );
+}
+
+/**
  * Convert tutor database records into public view objects.
  *
  * @param {Array<Object>} tutorRecords Tutor records.
@@ -235,7 +251,8 @@ function prepareManagementTutors(tutorRecords) {
 
     return {
       ...tutor,
-      initials: createInitials(tutor.name),
+      initials:
+        createInitials(tutor.name),
       creatorName: creatorName,
       createdDate:
         formatDate(tutor.createdAt),
@@ -549,10 +566,6 @@ router.post(
           req.user._id
       });
 
-      /*
-       * save() runs Tutor schema validation and the fuzzy-search
-       * plugin's document middleware before the record is stored.
-       */
       await tutor.save();
 
       req.session.successMessage =
@@ -574,6 +587,177 @@ router.post(
           'tutors/new',
           {
             title: 'Add Tutor',
+            formData: formData,
+            errors:
+              validationErrors
+          }
+        );
+      }
+
+      return next(error);
+    }
+  }
+);
+
+/**
+ * Display a protected Edit Tutor form containing the current record.
+ */
+router.get(
+  '/:id/edit',
+  ensureAuthenticated,
+  async function (req, res, next) {
+    const tutorId = req.params.id;
+
+    if (!isValidTutorId(tutorId)) {
+      return next(
+        createError(
+          404,
+          'Tutor record not found.'
+        )
+      );
+    }
+
+    try {
+      const tutor = await Tutor.findById(
+        tutorId
+      )
+        .lean()
+        .exec();
+
+      if (!tutor) {
+        return next(
+          createError(
+            404,
+            'Tutor record not found.'
+          )
+        );
+      }
+
+      return res.render(
+        'tutors/edit',
+        {
+          title: 'Edit Tutor',
+          tutorId:
+            tutor._id.toString(),
+          tutorName:
+            tutor.name,
+          formData:
+            prepareTutorFormData(
+              tutor
+            ),
+          errors: []
+        }
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+/**
+ * Validate and update an existing Tutor record.
+ */
+router.post(
+  '/:id/edit',
+  ensureAuthenticated,
+  async function (req, res, next) {
+    const tutorId = req.params.id;
+
+    if (!isValidTutorId(tutorId)) {
+      return next(
+        createError(
+          404,
+          'Tutor record not found.'
+        )
+      );
+    }
+
+    const normalizedTutor =
+      normalizeTutorForm(req.body);
+
+    const formData =
+      prepareTutorFormData(
+        normalizedTutor
+      );
+
+    try {
+      const tutor = await Tutor.findById(
+        tutorId
+      ).exec();
+
+      if (!tutor) {
+        return next(
+          createError(
+            404,
+            'Tutor record not found.'
+          )
+        );
+      }
+
+      /*
+       * Assign only the approved editable fields. The record ID,
+       * original creator, and creation date cannot be changed through
+       * the browser form.
+       */
+      tutor.name =
+        normalizedTutor.name;
+
+      tutor.subject =
+        normalizedTutor.subject;
+
+      tutor.courseCode =
+        normalizedTutor.courseCode;
+
+      tutor.skills =
+        normalizedTutor.skills;
+
+      tutor.availability =
+        normalizedTutor.availability;
+
+      tutor.tutoringFormat =
+        normalizedTutor.tutoringFormat;
+
+      tutor.location =
+        normalizedTutor.location;
+
+      tutor.contactEmail =
+        normalizedTutor.contactEmail;
+
+      tutor.experienceLevel =
+        normalizedTutor.experienceLevel;
+
+      tutor.description =
+        normalizedTutor.description;
+
+      /*
+       * save() runs schema validation and updates the plugin-generated
+       * fuzzy-search fields before MongoDB stores the changes.
+       */
+      await tutor.save();
+
+      req.session.successMessage =
+        'The tutor record for ' +
+        tutor.name +
+        ' was updated successfully.';
+
+      return res.redirect(
+        '/tutors/manage'
+      );
+    } catch (error) {
+      const validationErrors =
+        getValidationMessages(error);
+
+      if (
+        validationErrors.length > 0
+      ) {
+        return res.status(400).render(
+          'tutors/edit',
+          {
+            title: 'Edit Tutor',
+            tutorId: tutorId,
+            tutorName:
+              normalizedTutor.name ||
+              'Tutor',
             formData: formData,
             errors:
               validationErrors
