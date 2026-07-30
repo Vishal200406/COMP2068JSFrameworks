@@ -20,9 +20,6 @@ var app = express();
 
 /**
  * Confirm that the private session secret is available.
- *
- * The session secret must be stored in .env and must never be
- * committed to the GitHub repository.
  */
 if (!process.env.SESSION_SECRET) {
   throw new Error(
@@ -41,10 +38,8 @@ app.set(
 app.set('view engine', 'hbs');
 
 /**
- * Trust the first reverse proxy in production.
- *
- * Cloud hosts commonly place Express behind a reverse proxy. This
- * setting is required for secure cookies to work correctly there.
+ * Trust the first reverse proxy in production so secure cookies work
+ * correctly when the application is deployed behind a cloud proxy.
  */
 if (app.get('env') === 'production') {
   app.set('trust proxy', 1);
@@ -70,42 +65,23 @@ app.use(
 );
 
 /**
- * Configure Passport before registering its middleware.
+ * Configure Passport strategies and serialization.
  */
 configurePassport(passport);
 
 /**
- * Store application sessions in MongoDB.
- *
- * connect-mongo@3.2.0 reuses the active Mongoose connection created
- * before app.js is loaded in bin/www.
+ * Store Express sessions in MongoDB.
  */
 var sessionStore = new MongoStore({
   mongooseConnection: mongoose.connection,
   collection: 'sessions',
-
-  /*
-   * Sessions expire after seven days.
-   */
   ttl: 7 * 24 * 60 * 60,
-
-  /*
-   * Avoid updating an unchanged session in MongoDB more than once
-   * during a 24-hour period.
-   */
   touchAfter: 24 * 60 * 60,
-
-  /*
-   * MongoDB's TTL index removes expired session records.
-   */
   autoRemove: 'native'
 });
 
 /**
- * Configure Express login sessions.
- *
- * Only the session ID is stored in the browser cookie. Session data
- * itself is stored in the MongoDB sessions collection.
+ * Configure login sessions and the browser session cookie.
  */
 app.use(
   session({
@@ -126,20 +102,16 @@ app.use(
 );
 
 /**
- * Initialize Passport and restore authenticated login sessions.
- *
- * Session middleware must appear before Passport session middleware.
+ * Initialize Passport and restore authenticated users from sessions.
  */
 app.use(passport.initialize());
 app.use(passport.session());
 
 /**
- * Make authentication information available in every HBS view.
- *
- * Later, layout.hbs will use these values to display different
- * navigation links to authenticated and public visitors.
+ * Expose authentication and one-time notification information to all
+ * HBS views.
  */
-app.use(function exposeAuthenticationState(
+app.use(function exposeViewInformation(
   req,
   res,
   next
@@ -149,6 +121,19 @@ app.use(function exposeAuthenticationState(
 
   res.locals.currentUser =
     req.user || null;
+
+  res.locals.successMessage =
+    req.session.successMessage || null;
+
+  res.locals.errorMessage =
+    req.session.errorMessage || null;
+
+  /*
+   * Delete notification messages after exposing them once. This gives
+   * the application simple flash-message behaviour.
+   */
+  delete req.session.successMessage;
+  delete req.session.errorMessage;
 
   next();
 });
@@ -182,9 +167,6 @@ app.use(function handleApplicationError(
 ) {
   res.locals.message = err.message;
 
-  /*
-   * Show detailed error information only during development.
-   */
   res.locals.error =
     req.app.get('env') === 'development'
       ? err

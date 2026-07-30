@@ -1,0 +1,109 @@
+<section class="directory-content-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-xl-5">
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-body p-4 p-md-5">
+            <span class="section-label">
+              Welcome back
+            </span>
+
+            <h1 class="directory-result-title mt-2 mb-3">
+              Log in to TutorConnect
+            </h1>
+
+            <p class="text-secondary mb-4">
+              Use your local account to access the private tutor
+              management features.
+            </p>
+
+            {{#if errors}}
+              <div
+                class="alert alert-danger"
+                role="alert"
+              >
+                <ul class="mb-0">
+                  {{#each errors}}
+                    <li>
+                      {{this}}
+                    </li>
+                  {{/each}}
+                </ul>
+              </div>
+            {{/if}}
+
+            <form
+              action="/users/login"
+              method="POST"
+              novalidate
+            >
+              <div class="mb-3">
+                <label
+                  class="form-label fw-semibold"
+                  for="email"
+                >
+                  Email address
+                </label>
+
+                <input
+                  class="form-control form-control-lg"
+                  id="email"
+                  name="email"
+                  type="email"
+                  value="{{email}}"
+                  maxlength="150"
+                  autocomplete="email"
+                  required
+                >
+              </div>
+
+              <div class="mb-4">
+                <label
+                  class="form-label fw-semibold"
+                  for="password"
+                >
+                  Password
+                </label>
+
+                <input
+                  class="form-control form-control-lg"
+                  id="password"
+                  name="password"
+                  type="password"
+                  maxlength="72"
+                  autocomplete="current-password"
+                  required
+                >
+              </div>
+
+              <div class="d-grid">
+                <button
+                  class="btn btn-primary btn-lg tutor-primary-button"
+                  type="submit"
+                >
+                  Log In
+                </button>
+              </div>
+            </form>
+
+            <p class="text-center text-secondary mt-4 mb-0">
+              Do not have an account?
+
+              <a
+                class="fw-semibold"
+                href="/users/register"
+              >
+                Create one now
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <p class="text-center text-secondary small mt-3">
+          GitHub authentication will be added in the next development
+          step.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

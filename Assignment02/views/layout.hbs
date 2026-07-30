@@ -15,19 +15,13 @@
 
   <title>{{title}} | TutorConnect Directory</title>
 
-  <!--
-    Bootstrap provides responsive layout, navigation, forms,
-    buttons, spacing, and reusable interface components.
-  -->
+  <!-- Bootstrap provides responsive interface components. -->
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
     rel="stylesheet"
   >
 
-  <!--
-    TutorConnect custom styles are loaded after Bootstrap so project
-    styles can customize Bootstrap components where necessary.
-  -->
+  <!-- TutorConnect custom styles load after Bootstrap. -->
   <link
     rel="stylesheet"
     href="/stylesheets/style.css"
@@ -115,28 +109,87 @@
               </a>
             </li>
 
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                href="/#about"
-              >
-                About
-              </a>
-            </li>
+            {{#if isAuthenticated}}
+              <li class="nav-item ms-lg-2">
+                <span class="navbar-text text-white">
+                  Hello, {{currentUser.displayName}}
+                </span>
+              </li>
 
-            <li class="nav-item ms-lg-2">
-              <a
-                class="btn btn-light tutor-nav-button"
-                href="/tutors"
-              >
-                Browse Tutors
-              </a>
-            </li>
+              <li class="nav-item">
+                <form
+                  action="/users/logout"
+                  method="POST"
+                  class="m-0"
+                >
+                  <button
+                    class="btn btn-light tutor-nav-button"
+                    type="submit"
+                  >
+                    Log Out
+                  </button>
+                </form>
+              </li>
+            {{else}}
+              <li class="nav-item ms-lg-2">
+                <a
+                  class="nav-link"
+                  href="/users/register"
+                >
+                  Register
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a
+                  class="btn btn-light tutor-nav-button"
+                  href="/users/login"
+                >
+                  Log In
+                </a>
+              </li>
+            {{/if}}
           </ul>
         </div>
       </div>
     </nav>
   </header>
+
+  {{#if successMessage}}
+    <div class="container mt-3">
+      <div
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        {{successMessage}}
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  {{/if}}
+
+  {{#if errorMessage}}
+    <div class="container mt-3">
+      <div
+        class="alert alert-danger alert-dismissible fade show"
+        role="alert"
+      >
+        {{errorMessage}}
+
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  {{/if}}
 
   <main class="flex-grow-1">
     {{{body}}}
@@ -157,7 +210,9 @@
               TC
             </span>
 
-            <span>TutorConnect Directory</span>
+            <span>
+              TutorConnect Directory
+            </span>
           </a>
 
           <p class="footer-description">
@@ -190,11 +245,19 @@
               </a>
             </li>
 
-            <li>
-              <a href="/#how-it-works">
-                How It Works
-              </a>
-            </li>
+            {{#unless isAuthenticated}}
+              <li>
+                <a href="/users/register">
+                  Register
+                </a>
+              </li>
+
+              <li>
+                <a href="/users/login">
+                  Log In
+                </a>
+              </li>
+            {{/unless}}
           </ul>
         </div>
 
@@ -218,10 +281,7 @@
     </div>
   </footer>
 
-  <!--
-    The Bootstrap bundle enables the responsive navigation menu and
-    other JavaScript-powered Bootstrap components.
-  -->
+  <!-- Bootstrap bundle enables responsive navigation and alerts. -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
   ></script>
