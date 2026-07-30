@@ -13,9 +13,9 @@
         </h1>
 
         <p>
-          Create, review, and edit tutor records stored in MongoDB.
-          Delete-confirmation functionality will be added in the next
-          CRUD stage.
+          Create, review, edit, and delete tutor records stored in
+          MongoDB. All management actions require an authenticated
+          TutorConnect account.
         </p>
       </div>
 
@@ -25,7 +25,7 @@
         <span
           class="badge rounded-pill text-bg-success px-3 py-2"
         >
-          Authenticated access
+          Full CRUD active
         </span>
 
         <a
@@ -60,15 +60,16 @@
     </div>
 
     <div
-      class="alert alert-info rounded-4"
+      class="alert alert-success rounded-4"
       role="alert"
     >
       <strong>
-        Create and Edit functionality are active.
+        Full CRUD functionality is active.
       </strong>
 
-      Use Add Tutor to create a new record or Edit Tutor to update an
-      existing profile. Delete confirmation will be activated next.
+      Authenticated users can now create, read, edit, and permanently
+      delete tutor records. Delete actions require a separate
+      confirmation page.
     </div>
 
     {{#if hasTutors}}
@@ -103,9 +104,7 @@
                         </p>
                       </div>
 
-                      <span
-                        class="badge text-bg-primary"
-                      >
+                      <span class="badge text-bg-primary">
                         {{courseCode}}
                       </span>
                     </div>
@@ -202,19 +201,12 @@
                     Edit Tutor
                   </a>
 
-                  <button
+                  <a
                     class="btn btn-outline-danger"
-                    type="button"
-                    disabled
+                    href="/tutors/{{_id}}/delete"
                   >
                     Delete Tutor
-                  </button>
-
-                  <span
-                    class="align-self-center text-secondary small"
-                  >
-                    Delete confirmation coming next
-                  </span>
+                  </a>
                 </div>
               </div>
             </article>

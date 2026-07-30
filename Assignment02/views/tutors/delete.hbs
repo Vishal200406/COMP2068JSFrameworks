@@ -1,0 +1,195 @@
+<section class="directory-hero">
+  <div class="container">
+    <div class="directory-heading">
+      <span class="section-label">
+        Protected management area
+      </span>
+
+      <h1>
+        Delete tutor record
+      </h1>
+
+      <p>
+        Review the tutor information carefully before confirming the
+        permanent deletion.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="directory-content-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-9">
+        <div
+          class="alert alert-danger rounded-4 p-4"
+          role="alert"
+        >
+          <h2 class="h4 fw-bold">
+            This action cannot be undone
+          </h2>
+
+          <p class="mb-0">
+            Confirming the deletion will permanently remove this
+            tutor from MongoDB, the management dashboard, the public
+            directory, and all search results.
+          </p>
+        </div>
+
+        <div
+          class="card border-danger border-2 shadow-sm rounded-4"
+        >
+          <div class="card-body p-4 p-lg-5">
+            <div
+              class="d-flex flex-column flex-md-row align-items-md-start gap-4 mb-4"
+            >
+              <div
+                class="public-tutor-avatar"
+                aria-hidden="true"
+              >
+                {{tutor.initials}}
+              </div>
+
+              <div class="flex-grow-1">
+                <p class="directory-result-label">
+                  Tutor selected for deletion
+                </p>
+
+                <h2 class="directory-result-title">
+                  {{tutor.name}}
+                </h2>
+
+                <p class="text-secondary mb-0">
+                  {{tutor.subject}}
+                </p>
+              </div>
+
+              <span class="badge text-bg-primary">
+                {{tutor.courseCode}}
+              </span>
+            </div>
+
+            <p class="text-secondary">
+              {{tutor.description}}
+            </p>
+
+            <dl class="row mb-0">
+              <dt class="col-sm-4 text-secondary">
+                Skills
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.skills}}
+              </dd>
+
+              <dt class="col-sm-4 text-secondary">
+                Availability
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.availability}}
+              </dd>
+
+              <dt class="col-sm-4 text-secondary">
+                Tutoring format
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.tutoringFormat}}
+              </dd>
+
+              <dt class="col-sm-4 text-secondary">
+                Location
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.location}}
+              </dd>
+
+              <dt class="col-sm-4 text-secondary">
+                Contact email
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.contactEmail}}
+              </dd>
+
+              <dt class="col-sm-4 text-secondary">
+                Experience level
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.experienceLevel}}
+              </dd>
+
+              <dt class="col-sm-4 text-secondary">
+                Created by
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.creatorName}}
+              </dd>
+
+              <dt class="col-sm-4 text-secondary">
+                Created
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.createdDate}}
+              </dd>
+
+              <dt class="col-sm-4 text-secondary">
+                Last updated
+              </dt>
+
+              <dd class="col-sm-8">
+                {{tutor.updatedDate}}
+              </dd>
+            </dl>
+
+            <div
+              class="d-flex flex-column flex-sm-row gap-3 mt-5 pt-4 border-top"
+            >
+              <form
+                action="/tutors/{{tutor._id}}/delete"
+                method="POST"
+                class="m-0"
+              >
+                <button
+                  class="btn btn-danger btn-lg"
+                  type="submit"
+                >
+                  Permanently Delete Tutor
+                </button>
+              </form>
+
+              <a
+                class="btn btn-outline-secondary btn-lg"
+                href="/tutors/manage"
+              >
+                Cancel and Keep Tutor
+              </a>
+
+              <a
+                class="btn btn-outline-primary btn-lg"
+                href="/tutors/{{tutor._id}}/edit"
+              >
+                Edit Instead
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="directory-access-note">
+          <strong>
+            Confirmation required:
+          </strong>
+
+          Opening this page does not delete the record. MongoDB is
+          modified only when the Permanently Delete Tutor button is
+          submitted.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,6 +1,5 @@
 const express = require('express');
 const createError = require('http-errors');
-const mongoose = require('mongoose');
 
 const Tutor = require('../models/tutor');
 const authMiddleware = require('../middleware/auth');
@@ -75,8 +74,8 @@ function normalizeText(value, maximumLength) {
 /**
  * Normalize tutor form data before validation and storage.
  *
- * Only approved tutor fields are copied from req.body. This prevents
- * unexpected submitted properties from being inserted into MongoDB.
+ * Only approved tutor fields are copied from req.body. Unexpected
+ * submitted properties cannot be inserted into MongoDB.
  *
  * @param {Object} body Express request body.
  * @returns {Object} Normalized tutor information.
@@ -138,8 +137,8 @@ function normalizeTutorForm(body) {
 /**
  * Prepare tutor form data for HBS.
  *
- * Boolean properties allow HBS to restore selected dropdown values
- * without requiring a custom comparison helper.
+ * Boolean properties restore selected dropdown options after a
+ * validation error without requiring an HBS comparison helper.
  *
  * @param {Object} tutorData Tutor data.
  * @returns {Object} Tutor form view model.
@@ -153,13 +152,19 @@ function prepareTutorFormData(tutorData) {
     courseCode: data.courseCode || '',
     skills: data.skills || '',
     availability: data.availability || '',
+
     tutoringFormat:
       data.tutoringFormat || '',
-    location: data.location || '',
+
+    location:
+      data.location || '',
+
     contactEmail:
       data.contactEmail || '',
+
     experienceLevel:
       data.experienceLevel || '',
+
     description:
       data.description || '',
 
@@ -209,14 +214,17 @@ function getValidationMessages(error) {
 }
 
 /**
- * Determine whether a route parameter is a valid MongoDB ObjectId.
+ * Determine whether a route parameter has a valid MongoDB ObjectId
+ * format.
  *
  * @param {string} tutorId Tutor record ID.
- * @returns {boolean} True when the ID has a valid ObjectId format.
+ * @returns {boolean} True when the ID is a 24-character hexadecimal
+ * ObjectId.
  */
 function isValidTutorId(tutorId) {
-  return mongoose.Types.ObjectId.isValid(
-    tutorId
+  return (
+    typeof tutorId === 'string' &&
+    /^[a-f0-9]{24}$/i.test(tutorId)
   );
 }
 
@@ -253,13 +261,47 @@ function prepareManagementTutors(tutorRecords) {
       ...tutor,
       initials:
         createInitials(tutor.name),
-      creatorName: creatorName,
+
+      creatorName:
+        creatorName,
+
       createdDate:
         formatDate(tutor.createdAt),
+
       updatedDate:
         formatDate(tutor.updatedAt)
     };
   });
+}
+
+/**
+ * Prepare one tutor record for the deletion-confirmation page.
+ *
+ * @param {Object} tutor Tutor database record.
+ * @returns {Object} Delete confirmation view model.
+ */
+function prepareDeleteTutor(tutor) {
+  const creatorName =
+    tutor.createdBy &&
+    tutor.createdBy.displayName
+      ? tutor.createdBy.displayName
+      : 'Seed or legacy record';
+
+  return {
+    ...tutor,
+
+    initials:
+      createInitials(tutor.name),
+
+    creatorName:
+      creatorName,
+
+    createdDate:
+      formatDate(tutor.createdAt),
+
+    updatedDate:
+      formatDate(tutor.updatedAt)
+  };
 }
 
 /**
@@ -421,18 +463,25 @@ router.get('/', async function (req, res, next) {
         title: 'Tutor Directory',
         tutors: tutors,
         searchTerm: searchTerm,
+
         hasSearchInput:
           hasSearchInput,
+
         searchPerformed:
           searchPerformed,
+
         searchTooShort:
           searchTooShort,
+
         hasTutors:
           resultCount > 0,
+
         searchMethod:
           searchMethod,
+
         resultCount:
           resultCount,
+
         resultCountText:
           resultCount +
           (resultCount === 1
@@ -479,10 +528,13 @@ router.get(
         {
           title: 'Manage Tutors',
           tutors: tutors,
+
           hasTutors:
             tutorCount > 0,
+
           tutorCount:
             tutorCount,
+
           tutorCountText:
             tutorCount +
             (tutorCount === 1
@@ -507,8 +559,10 @@ router.get(
       'tutors/new',
       {
         title: 'Add Tutor',
+
         formData:
           prepareTutorFormData({}),
+
         errors: []
       }
     );
@@ -588,6 +642,7 @@ router.post(
           {
             title: 'Add Tutor',
             formData: formData,
+
             errors:
               validationErrors
           }
@@ -637,14 +692,18 @@ router.get(
         'tutors/edit',
         {
           title: 'Edit Tutor',
+
           tutorId:
             tutor._id.toString(),
+
           tutorName:
             tutor.name,
+
           formData:
             prepareTutorFormData(
               tutor
             ),
+
           errors: []
         }
       );
@@ -695,9 +754,8 @@ router.post(
       }
 
       /*
-       * Assign only the approved editable fields. The record ID,
-       * original creator, and creation date cannot be changed through
-       * the browser form.
+       * Assign only approved editable fields. The record ID, creator,
+       * and creation date cannot be changed through the form.
        */
       tutor.name =
         normalizedTutor.name;
@@ -730,8 +788,8 @@ router.post(
         normalizedTutor.description;
 
       /*
-       * save() runs schema validation and updates the plugin-generated
-       * fuzzy-search fields before MongoDB stores the changes.
+       * save() runs schema validation and refreshes plugin-generated
+       * fuzzy-search values.
        */
       await tutor.save();
 
@@ -755,16 +813,151 @@ router.post(
           {
             title: 'Edit Tutor',
             tutorId: tutorId,
+
             tutorName:
               normalizedTutor.name ||
               'Tutor',
-            formData: formData,
+
+            formData:
+              formData,
+
             errors:
               validationErrors
           }
         );
       }
 
+      return next(error);
+    }
+  }
+);
+
+/**
+ * Display the protected delete-confirmation page.
+ *
+ * This GET route does not modify MongoDB. It displays the exact tutor
+ * record and asks the authenticated user to confirm or cancel.
+ */
+router.get(
+  '/:id/delete',
+  ensureAuthenticated,
+  async function (req, res, next) {
+    const tutorId = req.params.id;
+
+    if (!isValidTutorId(tutorId)) {
+      return next(
+        createError(
+          404,
+          'Tutor record not found.'
+        )
+      );
+    }
+
+    try {
+      const tutor = await Tutor.findById(
+        tutorId
+      )
+        .populate(
+          'createdBy',
+          'displayName'
+        )
+        .lean()
+        .exec();
+
+      if (!tutor) {
+        return next(
+          createError(
+            404,
+            'Tutor record not found.'
+          )
+        );
+      }
+
+      return res.render(
+        'tutors/delete',
+        {
+          title: 'Delete Tutor',
+
+          tutor:
+            prepareDeleteTutor(tutor)
+        }
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+/**
+ * Permanently delete a tutor after confirmation.
+ *
+ * Deletion uses POST rather than GET so opening a link, browser
+ * prefetching, or loading an image cannot remove a database record.
+ */
+router.post(
+  '/:id/delete',
+  ensureAuthenticated,
+  async function (req, res, next) {
+    const tutorId = req.params.id;
+
+    if (!isValidTutorId(tutorId)) {
+      return next(
+        createError(
+          404,
+          'Tutor record not found.'
+        )
+      );
+    }
+
+    try {
+      const tutor = await Tutor.findById(
+        tutorId
+      )
+        .select('name')
+        .lean()
+        .exec();
+
+      if (!tutor) {
+        return next(
+          createError(
+            404,
+            'Tutor record not found.'
+          )
+        );
+      }
+
+      const deletionResult =
+        await Tutor.deleteOne({
+          _id: tutorId
+        }).exec();
+
+      /*
+       * Mongoose 5 results may expose the deleted count as either
+       * deletedCount or n, depending on the MongoDB driver response.
+       */
+      const deletedCount =
+        typeof deletionResult.deletedCount === 'number'
+          ? deletionResult.deletedCount
+          : deletionResult.n;
+
+      if (!deletedCount) {
+        return next(
+          createError(
+            404,
+            'Tutor record not found.'
+          )
+        );
+      }
+
+      req.session.successMessage =
+        'The tutor record for ' +
+        tutor.name +
+        ' was permanently deleted.';
+
+      return res.redirect(
+        '/tutors/manage'
+      );
+    } catch (error) {
       return next(error);
     }
   }
