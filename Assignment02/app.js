@@ -39,14 +39,14 @@ app.set('view engine', 'hbs');
 
 /**
  * Trust the first reverse proxy in production so secure cookies work
- * correctly when the application is deployed behind a cloud proxy.
+ * when the application is deployed behind a cloud-hosting proxy.
  */
 if (app.get('env') === 'production') {
   app.set('trust proxy', 1);
 }
 
 /**
- * Register request-parsing and static-file middleware.
+ * Register request parsing and static-file middleware.
  */
 app.use(logger('dev'));
 
@@ -67,10 +67,11 @@ app.use(
 /**
  * Configure Passport strategies and serialization.
  */
-configurePassport(passport);
+var authenticationCapabilities =
+  configurePassport(passport);
 
 /**
- * Store Express sessions in MongoDB.
+ * Store Express login sessions in MongoDB.
  */
 var sessionStore = new MongoStore({
   mongooseConnection: mongoose.connection,
@@ -81,7 +82,7 @@ var sessionStore = new MongoStore({
 });
 
 /**
- * Configure login sessions and the browser session cookie.
+ * Configure the server-side session and browser session cookie.
  */
 app.use(
   session({
@@ -102,7 +103,7 @@ app.use(
 );
 
 /**
- * Initialize Passport and restore authenticated users from sessions.
+ * Initialize Passport and restore authenticated login sessions.
  */
 app.use(passport.initialize());
 app.use(passport.session());
@@ -122,6 +123,9 @@ app.use(function exposeViewInformation(
   res.locals.currentUser =
     req.user || null;
 
+  res.locals.githubAuthAvailable =
+    authenticationCapabilities.githubEnabled;
+
   res.locals.successMessage =
     req.session.successMessage || null;
 
@@ -129,8 +133,7 @@ app.use(function exposeViewInformation(
     req.session.errorMessage || null;
 
   /*
-   * Delete notification messages after exposing them once. This gives
-   * the application simple flash-message behaviour.
+   * Delete each notification after exposing it once.
    */
   delete req.session.successMessage;
   delete req.session.errorMessage;

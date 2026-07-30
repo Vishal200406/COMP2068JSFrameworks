@@ -6,10 +6,10 @@ const User = require('../models/user');
 const router = express.Router();
 
 /**
- * Normalize an email address before storing or searching for it.
+ * Normalize an email address.
  *
  * @param {unknown} value Submitted email value.
- * @returns {string} Trimmed lowercase email address.
+ * @returns {string} Trimmed lowercase email.
  */
 function normalizeEmail(value) {
   if (typeof value !== 'string') {
@@ -20,13 +20,10 @@ function normalizeEmail(value) {
 }
 
 /**
- * Normalize an ordinary text form field.
- *
- * Passwords must not use this helper because spaces may intentionally
- * be part of a user's password.
+ * Normalize an ordinary text field.
  *
  * @param {unknown} value Submitted field value.
- * @returns {string} Trimmed field value.
+ * @returns {string} Trimmed text.
  */
 function normalizeText(value) {
   if (typeof value !== 'string') {
@@ -37,10 +34,23 @@ function normalizeText(value) {
 }
 
 /**
- * Validate local registration information before creating a User.
+ * Determine whether GitHub authentication is configured.
+ *
+ * @returns {boolean} True when all GitHub OAuth settings exist.
+ */
+function githubAuthenticationIsConfigured() {
+  return Boolean(
+    process.env.GITHUB_CLIENT_ID &&
+      process.env.GITHUB_CLIENT_SECRET &&
+      process.env.GITHUB_CALLBACK_URL
+  );
+}
+
+/**
+ * Validate local registration information.
  *
  * @param {Object} data Registration data.
- * @returns {Array<string>} Validation error messages.
+ * @returns {Array<string>} Validation errors.
  */
 function validateRegistration(data) {
   const errors = [];
@@ -99,8 +109,7 @@ function validateRegistration(data) {
 }
 
 /**
- * Convert Mongoose validation errors into messages that can be shown
- * in the registration form.
+ * Convert Mongoose validation errors into readable messages.
  *
  * @param {Error} error Mongoose error.
  * @returns {Array<string>} Validation messages.
@@ -120,7 +129,7 @@ function getMongooseValidationMessages(error) {
 }
 
 /**
- * Redirect /users to the appropriate authentication page.
+ * Redirect the base user route.
  */
 router.get('/', function (req, res) {
   if (req.isAuthenticated()) {
@@ -131,7 +140,7 @@ router.get('/', function (req, res) {
 });
 
 /**
- * Display the local account registration page.
+ * Display the registration page.
  */
 router.get('/register', function (req, res) {
   if (req.isAuthenticated()) {
@@ -149,8 +158,7 @@ router.get('/register', function (req, res) {
 });
 
 /**
- * Create a local user account and immediately establish a login
- * session after successful registration.
+ * Create a local account and immediately log the user in.
  */
 router.post(
   '/register',
@@ -160,17 +168,22 @@ router.post(
     }
 
     const formData = {
-      displayName: normalizeText(req.body.displayName),
-      email: normalizeEmail(req.body.email)
+      displayName:
+        normalizeText(req.body.displayName),
+
+      email:
+        normalizeEmail(req.body.email)
     };
 
     const registrationData = {
       displayName: formData.displayName,
       email: formData.email,
+
       password:
         typeof req.body.password === 'string'
           ? req.body.password
           : '',
+
       confirmPassword:
         typeof req.body.confirmPassword === 'string'
           ? req.body.confirmPassword
@@ -213,8 +226,12 @@ router.post(
       }
 
       const user = new User({
-        displayName: registrationData.displayName,
-        email: registrationData.email,
+        displayName:
+          registrationData.displayName,
+
+        email:
+          registrationData.email,
+
         authProvider: 'local'
       });
 
@@ -224,10 +241,6 @@ router.post(
 
       await user.save();
 
-      /*
-       * Log the new user in immediately after successful account
-       * creation.
-       */
       return req.login(
         user,
         function (loginError) {
@@ -242,10 +255,6 @@ router.post(
         }
       );
     } catch (error) {
-      /*
-       * Handle a duplicate email created during a race between the
-       * initial existence check and the database save operation.
-       */
       if (error && error.code === 11000) {
         return res.status(409).render(
           'users/register',
@@ -279,7 +288,7 @@ router.post(
 );
 
 /**
- * Display the local login page.
+ * Display the login page.
  */
 router.get('/login', function (req, res) {
   if (req.isAuthenticated()) {
@@ -294,7 +303,7 @@ router.get('/login', function (req, res) {
 });
 
 /**
- * Authenticate a local account using Passport.
+ * Authenticate a local account.
  */
 router.post(
   '/login',
@@ -303,7 +312,8 @@ router.post(
       return res.redirect('/tutors');
     }
 
-    const email = normalizeEmail(req.body.email);
+    const email =
+      normalizeEmail(req.body.email);
 
     const password =
       typeof req.body.password === 'string'
@@ -323,11 +333,6 @@ router.post(
       );
     }
 
-    /*
-     * A custom Passport callback lets the application preserve the
-     * submitted email address and display authentication feedback in
-     * the same HBS page.
-     */
     return passport.authenticate(
       'local',
       function (error, user, information) {
@@ -370,10 +375,82 @@ router.post(
 );
 
 /**
+ * Start GitHub OAuth authentication.
+ */
+router.get(
+  '/github',
+  function (req, res, next) {
+    if (req.isAuthenticated()) {
+      return res.redirect('/tutors');
+    }
+
+    if (!githubAuthenticationIsConfigured()) {
+      req.session.errorMessage =
+        'GitHub login is not currently configured.';
+
+      return res.redirect('/users/login');
+    }
+
+    /*
+     * No repository-related OAuth scopes are requested. TutorConnect
+     * uses the returned identity information only to create or locate
+     * the application user.
+     */
+    return passport.authenticate('github')(
+      req,
+      res,
+      next
+    );
+  }
+);
+
+/**
+ * Complete GitHub OAuth authentication.
+ */
+router.get(
+  '/github/callback',
+  function (req, res, next) {
+    if (!githubAuthenticationIsConfigured()) {
+      req.session.errorMessage =
+        'GitHub login is not currently configured.';
+
+      return res.redirect('/users/login');
+    }
+
+    return passport.authenticate(
+      'github',
+      function (error, user) {
+        if (error) {
+          return next(error);
+        }
+
+        if (!user) {
+          req.session.errorMessage =
+            'GitHub login was cancelled or could not be completed.';
+
+          return res.redirect('/users/login');
+        }
+
+        return req.login(
+          user,
+          function (loginError) {
+            if (loginError) {
+              return next(loginError);
+            }
+
+            req.session.successMessage =
+              'You are now logged in with GitHub.';
+
+            return res.redirect('/tutors');
+          }
+        );
+      }
+    )(req, res, next);
+  }
+);
+
+/**
  * End the authenticated login session.
- *
- * Logout uses POST so merely following a link or loading an image
- * cannot log the user out.
  */
 router.post(
   '/logout',
@@ -383,17 +460,15 @@ router.post(
         return next(logoutError);
       }
 
-      /*
-       * Remove the complete server-side session after Passport has
-       * cleared its authentication state.
-       */
       req.session.destroy(
         function (sessionError) {
           if (sessionError) {
             return next(sessionError);
           }
 
-          res.clearCookie('tutorconnect.sid');
+          res.clearCookie(
+            'tutorconnect.sid'
+          );
 
           return res.redirect('/');
         }
