@@ -1,13 +1,18 @@
 <section class="directory-hero">
   <div class="container">
     <div class="directory-heading">
-      <span class="section-label">Public directory</span>
+      <span class="section-label">
+        Public directory
+      </span>
 
-      <h1>Find a peer tutor</h1>
+      <h1>
+        Find a peer tutor
+      </h1>
 
       <p>
-        Search tutor profiles by name, subject, course code, academic
-        skill, location, availability, experience, or tutoring format.
+        Search tutor profiles by name, subject, course code,
+        academic skill, location, availability, experience level,
+        or tutoring format.
       </p>
     </div>
 
@@ -18,11 +23,17 @@
       role="search"
     >
       <div class="search-field-wrapper">
-        <label class="visually-hidden" for="tutorSearch">
-          Search tutors
+        <label
+          class="visually-hidden"
+          for="tutorSearch"
+        >
+          Search tutor profiles
         </label>
 
-        <span class="directory-search-icon" aria-hidden="true">
+        <span
+          class="directory-search-icon"
+          aria-hidden="true"
+        >
           ⌕
         </span>
 
@@ -34,6 +45,7 @@
           value="{{searchTerm}}"
           placeholder="Try JavaScript, COMP 2068, online, or algebra"
           maxlength="100"
+          autocomplete="off"
         >
       </div>
 
@@ -44,12 +56,25 @@
         Search Tutors
       </button>
 
-      {{#if hasSearch}}
-        <a class="btn directory-clear-button" href="/tutors">
+      {{#if hasSearchInput}}
+        <a
+          class="btn directory-clear-button"
+          href="/tutors"
+        >
           Clear Search
         </a>
       {{/if}}
     </form>
+
+    {{#if searchTooShort}}
+      <div
+        class="alert alert-warning directory-search-warning"
+        role="alert"
+      >
+        Enter at least two characters to perform a fuzzy search.
+        The full tutor directory is shown below.
+      </div>
+    {{/if}}
   </div>
 </section>
 
@@ -57,7 +82,7 @@
   <div class="container">
     <div class="directory-result-header">
       <div>
-        {{#if hasSearch}}
+        {{#if searchPerformed}}
           <p class="directory-result-label">
             Search results for
           </p>
@@ -77,7 +102,7 @@
       </div>
 
       <span class="directory-result-count">
-        {{resultCount}} tutor profiles
+        {{resultCountText}}
       </span>
     </div>
 
@@ -87,13 +112,21 @@
           <div class="col-md-6 col-xl-4">
             <article class="public-tutor-card h-100">
               <div class="public-tutor-card-header">
-                <div class="public-tutor-avatar" aria-hidden="true">
-                  {{name.[0]}}
+                <div
+                  class="public-tutor-avatar"
+                  aria-hidden="true"
+                >
+                  {{initials}}
                 </div>
 
                 <div class="public-tutor-heading">
-                  <h3>{{name}}</h3>
-                  <p>{{subject}}</p>
+                  <h3>
+                    {{name}}
+                  </h3>
+
+                  <p>
+                    {{subject}}
+                  </p>
                 </div>
 
                 <span class="public-course-code">
@@ -107,33 +140,60 @@
 
               <dl class="public-tutor-details">
                 <div>
-                  <dt>Skills</dt>
-                  <dd>{{skills}}</dd>
+                  <dt>
+                    Skills
+                  </dt>
+
+                  <dd>
+                    {{skills}}
+                  </dd>
                 </div>
 
                 <div>
-                  <dt>Availability</dt>
-                  <dd>{{availability}}</dd>
+                  <dt>
+                    Availability
+                  </dt>
+
+                  <dd>
+                    {{availability}}
+                  </dd>
                 </div>
 
                 <div>
-                  <dt>Format</dt>
-                  <dd>{{tutoringFormat}}</dd>
+                  <dt>
+                    Format
+                  </dt>
+
+                  <dd>
+                    {{tutoringFormat}}
+                  </dd>
                 </div>
 
                 <div>
-                  <dt>Location</dt>
-                  <dd>{{location}}</dd>
+                  <dt>
+                    Location
+                  </dt>
+
+                  <dd>
+                    {{location}}
+                  </dd>
                 </div>
 
                 <div>
-                  <dt>Experience</dt>
-                  <dd>{{experienceLevel}}</dd>
+                  <dt>
+                    Experience
+                  </dt>
+
+                  <dd>
+                    {{experienceLevel}}
+                  </dd>
                 </div>
               </dl>
 
               <div class="public-tutor-contact">
-                <span>Contact tutor</span>
+                <span>
+                  Contact tutor
+                </span>
 
                 <a href="mailto:{{contactEmail}}">
                   {{contactEmail}}
@@ -145,33 +205,47 @@
       </div>
     {{else}}
       <div class="directory-empty-state">
-        <div class="directory-empty-icon" aria-hidden="true">
+        <div
+          class="directory-empty-icon"
+          aria-hidden="true"
+        >
           ?
         </div>
 
-        <h2>No tutor profiles were found</h2>
+        <h2>
+          No tutor profiles were found
+        </h2>
 
-        {{#if hasSearch}}
+        {{#if searchPerformed}}
           <p>
-            Try a broader keyword, check the spelling, or clear the
-            current search to view the complete directory.
+            No tutor profiles matched “{{searchTerm}}.” Try a
+            broader keyword, check the spelling, or clear the current
+            search to see every tutor.
           </p>
 
-          <a class="btn btn-primary" href="/tutors">
+          <a
+            class="btn btn-primary tutor-primary-button"
+            href="/tutors"
+          >
             View All Tutors
           </a>
         {{else}}
           <p>
-            Tutor profiles will appear here after they have been added.
+            Tutor profiles will appear here after records have been
+            added to the directory.
           </p>
         {{/if}}
       </div>
     {{/if}}
 
     <div class="directory-access-note">
-      <strong>Public access:</strong>
-      Visitors may browse and contact tutors without logging in.
-      Tutor-record management will be restricted to authenticated users.
+      <strong>
+        Public access:
+      </strong>
+
+      Visitors can browse tutor profiles and use the listed contact
+      information without logging in. Adding, editing, and deleting
+      records will be restricted to authenticated users.
     </div>
   </div>
 </section>
