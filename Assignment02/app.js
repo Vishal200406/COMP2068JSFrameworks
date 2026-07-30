@@ -4,7 +4,6 @@ var path = require('path');
 var logger = require('morgan');
 var session = require('express-session');
 var passport = require('passport');
-var mongoose = require('mongoose');
 
 var MongoStore =
   require('connect-mongo')(session);
@@ -12,18 +11,29 @@ var MongoStore =
 var configurePassport =
   require('./config/passport');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var tutorsRouter = require('./routes/tutors');
+var indexRouter =
+  require('./routes/index');
+
+var usersRouter =
+  require('./routes/users');
+
+var tutorsRouter =
+  require('./routes/tutors');
 
 var app = express();
 
 /**
- * Confirm that the private session secret is available.
+ * Confirm that required private configuration values are available.
  */
+if (!process.env.MONGODB_URI) {
+  throw new Error(
+    'MONGODB_URI is not defined. Add it to the environment variables.'
+  );
+}
+
 if (!process.env.SESSION_SECRET) {
   throw new Error(
-    'SESSION_SECRET is not defined. Add it to the .env file.'
+    'SESSION_SECRET is not defined. Add it to the environment variables.'
   );
 }
 
@@ -38,15 +48,17 @@ app.set(
 app.set('view engine', 'hbs');
 
 /**
- * Trust the first reverse proxy in production so secure cookies work
- * when the application is deployed behind a cloud-hosting proxy.
+ * Vercel places the Express application behind a reverse proxy.
+ *
+ * Trusting the first proxy allows secure session cookies to work
+ * correctly in production.
  */
 if (app.get('env') === 'production') {
   app.set('trust proxy', 1);
 }
 
 /**
- * Register request parsing and static-file middleware.
+ * Register request logging, body parsing, and static-file middleware.
  */
 app.use(logger('dev'));
 
@@ -65,16 +77,20 @@ app.use(
 );
 
 /**
- * Configure Passport strategies and serialization.
+ * Configure local and GitHub Passport strategies.
  */
 var authenticationCapabilities =
   configurePassport(passport);
 
 /**
- * Store Express login sessions in MongoDB.
+ * Store login sessions in MongoDB.
+ *
+ * The session store uses its own MongoDB connection string. This
+ * approach works for both the local Express server and Vercel's
+ * serverless runtime.
  */
 var sessionStore = new MongoStore({
-  mongooseConnection: mongoose.connection,
+  url: process.env.MONGODB_URI,
   collection: 'sessions',
   ttl: 7 * 24 * 60 * 60,
   touchAfter: 24 * 60 * 60,
@@ -82,7 +98,7 @@ var sessionStore = new MongoStore({
 });
 
 /**
- * Configure the server-side session and browser session cookie.
+ * Configure Express login sessions.
  */
 app.use(
   session({
@@ -94,8 +110,13 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
+
+      /*
+       * HTTPS is used by Vercel production deployments.
+       */
       secure:
         app.get('env') === 'production',
+
       maxAge:
         7 * 24 * 60 * 60 * 1000
     }
@@ -103,14 +124,13 @@ app.use(
 );
 
 /**
- * Initialize Passport and restore authenticated login sessions.
+ * Initialize Passport and restore authenticated users from sessions.
  */
 app.use(passport.initialize());
 app.use(passport.session());
 
 /**
- * Expose authentication and one-time notification information to all
- * HBS views.
+ * Expose authentication information and one-time messages to HBS.
  */
 app.use(function exposeViewInformation(
   req,
@@ -133,7 +153,7 @@ app.use(function exposeViewInformation(
     req.session.errorMessage || null;
 
   /*
-   * Delete each notification after exposing it once.
+   * Remove notification messages after one page display.
    */
   delete req.session.successMessage;
   delete req.session.errorMessage;
@@ -149,7 +169,7 @@ app.use('/users', usersRouter);
 app.use('/tutors', tutorsRouter);
 
 /**
- * Convert unmatched requests into 404 errors.
+ * Convert unmatched URLs into 404 errors.
  */
 app.use(function handleNotFound(
   req,
@@ -170,6 +190,9 @@ app.use(function handleApplicationError(
 ) {
   res.locals.message = err.message;
 
+  /*
+   * Hide stack traces in the production deployment.
+   */
   res.locals.error =
     req.app.get('env') === 'development'
       ? err
