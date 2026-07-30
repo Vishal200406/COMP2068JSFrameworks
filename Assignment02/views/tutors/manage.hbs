@@ -1,0 +1,230 @@
+<section class="directory-hero">
+  <div class="container">
+    <div
+      class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-4"
+    >
+      <div class="directory-heading">
+        <span class="section-label">
+          Protected management area
+        </span>
+
+        <h1>
+          Manage tutor records
+        </h1>
+
+        <p>
+          Review the tutor records stored in MongoDB. Creating,
+          editing, and deleting records will be added in the next
+          development stage.
+        </p>
+      </div>
+
+      <div>
+        <span
+          class="badge rounded-pill text-bg-success px-3 py-2"
+        >
+          Authenticated access
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="directory-content-section">
+  <div class="container">
+    <div
+      class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4"
+    >
+      <div>
+        <p class="directory-result-label">
+          Database records
+        </p>
+
+        <h2 class="directory-result-title">
+          Tutor-management dashboard
+        </h2>
+      </div>
+
+      <span class="directory-result-count">
+        {{tutorCountText}}
+      </span>
+    </div>
+
+    <div
+      class="alert alert-info rounded-4"
+      role="alert"
+    >
+      <strong>
+        Current stage:
+      </strong>
+
+      This protected page confirms that authentication middleware is
+      working. Add, Edit, and Delete controls will become active in
+      the following CRUD steps.
+    </div>
+
+    {{#if hasTutors}}
+      <div class="row g-4">
+        {{#each tutors}}
+          <div class="col-lg-6">
+            <article
+              class="card h-100 border-0 shadow-sm rounded-4"
+            >
+              <div class="card-body p-4">
+                <div
+                  class="d-flex align-items-start gap-3 mb-4"
+                >
+                  <div
+                    class="public-tutor-avatar"
+                    aria-hidden="true"
+                  >
+                    {{initials}}
+                  </div>
+
+                  <div class="flex-grow-1">
+                    <div
+                      class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-2"
+                    >
+                      <div>
+                        <h3 class="h5 fw-bold mb-1">
+                          {{name}}
+                        </h3>
+
+                        <p class="text-secondary mb-0">
+                          {{subject}}
+                        </p>
+                      </div>
+
+                      <span
+                        class="badge text-bg-primary"
+                      >
+                        {{courseCode}}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <dl class="row mb-4">
+                  <dt class="col-sm-4 text-secondary">
+                    Contact
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    <a href="mailto:{{contactEmail}}">
+                      {{contactEmail}}
+                    </a>
+                  </dd>
+
+                  <dt class="col-sm-4 text-secondary">
+                    Format
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    {{tutoringFormat}}
+                  </dd>
+
+                  <dt class="col-sm-4 text-secondary">
+                    Location
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    {{location}}
+                  </dd>
+
+                  <dt class="col-sm-4 text-secondary">
+                    Experience
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    {{experienceLevel}}
+                  </dd>
+
+                  <dt class="col-sm-4 text-secondary">
+                    Created by
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    {{creatorName}}
+                  </dd>
+
+                  <dt class="col-sm-4 text-secondary">
+                    Created
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    {{createdDate}}
+                  </dd>
+
+                  <dt class="col-sm-4 text-secondary">
+                    Last updated
+                  </dt>
+
+                  <dd class="col-sm-8">
+                    {{updatedDate}}
+                  </dd>
+                </dl>
+
+                <div
+                  class="d-flex flex-wrap gap-2 pt-3 border-top"
+                >
+                  <button
+                    class="btn btn-outline-primary"
+                    type="button"
+                    disabled
+                  >
+                    Edit Tutor
+                  </button>
+
+                  <button
+                    class="btn btn-outline-danger"
+                    type="button"
+                    disabled
+                  >
+                    Delete Tutor
+                  </button>
+
+                  <span
+                    class="align-self-center text-secondary small"
+                  >
+                    CRUD controls coming next
+                  </span>
+                </div>
+              </div>
+            </article>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div
+        class="card border-0 shadow-sm rounded-4"
+      >
+        <div class="card-body p-5 text-center">
+          <div
+            class="directory-empty-icon"
+            aria-hidden="true"
+          >
+            0
+          </div>
+
+          <h2 class="h4 fw-bold">
+            No tutor records are available
+          </h2>
+
+          <p class="text-secondary mb-0">
+            Tutor records will appear here after they are inserted
+            into MongoDB.
+          </p>
+        </div>
+      </div>
+    {{/if}}
+
+    <div class="mt-4">
+      <a
+        class="btn btn-outline-primary"
+        href="/tutors"
+      >
+        View Public Directory
+      </a>
+    </div>
+  </div>
+</section>
