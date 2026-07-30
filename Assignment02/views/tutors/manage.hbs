@@ -13,18 +13,27 @@
         </h1>
 
         <p>
-          Review the tutor records stored in MongoDB. Creating,
-          editing, and deleting records will be added in the next
-          development stage.
+          Create and review tutor records stored in MongoDB. Editing
+          and delete-confirmation functionality will be added in the
+          remaining CRUD stages.
         </p>
       </div>
 
-      <div>
+      <div
+        class="d-flex flex-column flex-sm-row align-items-sm-center gap-3"
+      >
         <span
           class="badge rounded-pill text-bg-success px-3 py-2"
         >
           Authenticated access
         </span>
+
+        <a
+          class="btn btn-primary tutor-primary-button"
+          href="/tutors/new"
+        >
+          Add Tutor
+        </a>
       </div>
     </div>
   </div>
@@ -55,12 +64,12 @@
       role="alert"
     >
       <strong>
-        Current stage:
+        Create functionality is active.
       </strong>
 
-      This protected page confirms that authentication middleware is
-      working. Add, Edit, and Delete controls will become active in
-      the following CRUD steps.
+      Use the Add Tutor button to create a validated MongoDB tutor
+      record. Edit and Delete controls will be activated in the
+      remaining CRUD steps.
     </div>
 
     {{#if hasTutors}}
@@ -103,6 +112,10 @@
                     </div>
                   </div>
                 </div>
+
+                <p class="text-secondary">
+                  {{description}}
+                </p>
 
                 <dl class="row mb-4">
                   <dt class="col-sm-4 text-secondary">
@@ -186,7 +199,7 @@
                   <span
                     class="align-self-center text-secondary small"
                   >
-                    CRUD controls coming next
+                    Edit and Delete coming next
                   </span>
                 </div>
               </div>
@@ -210,20 +223,36 @@
             No tutor records are available
           </h2>
 
-          <p class="text-secondary mb-0">
-            Tutor records will appear here after they are inserted
-            into MongoDB.
+          <p class="text-secondary">
+            Create the first tutor record to begin building the
+            public directory.
           </p>
+
+          <a
+            class="btn btn-primary tutor-primary-button"
+            href="/tutors/new"
+          >
+            Add First Tutor
+          </a>
         </div>
       </div>
     {{/if}}
 
-    <div class="mt-4">
+    <div
+      class="d-flex flex-column flex-sm-row gap-3 mt-4"
+    >
       <a
         class="btn btn-outline-primary"
         href="/tutors"
       >
         View Public Directory
+      </a>
+
+      <a
+        class="btn btn-primary"
+        href="/tutors/new"
+      >
+        Add Another Tutor
       </a>
     </div>
   </div>

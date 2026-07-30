@@ -1,0 +1,387 @@
+<section class="directory-hero">
+  <div class="container">
+    <div class="directory-heading">
+      <span class="section-label">
+        Protected management area
+      </span>
+
+      <h1>
+        Add a tutor
+      </h1>
+
+      <p>
+        Create a new peer-tutor profile. All fields are required and
+        the completed record will immediately become visible in the
+        public tutor directory.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="directory-content-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-10">
+        <div
+          class="card border-0 shadow-sm rounded-4"
+        >
+          <div class="card-body p-4 p-lg-5">
+            <div
+              class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-4"
+            >
+              <div>
+                <p class="directory-result-label">
+                  New database record
+                </p>
+
+                <h2 class="directory-result-title">
+                  Tutor profile information
+                </h2>
+              </div>
+
+              <span
+                class="badge rounded-pill text-bg-success px-3 py-2"
+              >
+                Authenticated form
+              </span>
+            </div>
+
+            {{#if errors}}
+              <div
+                class="alert alert-danger rounded-4"
+                role="alert"
+              >
+                <strong>
+                  The tutor could not be created.
+                </strong>
+
+                <p class="mb-2">
+                  Correct the following information:
+                </p>
+
+                <ul class="mb-0">
+                  {{#each errors}}
+                    <li>
+                      {{this}}
+                    </li>
+                  {{/each}}
+                </ul>
+              </div>
+            {{/if}}
+
+            <form
+              action="/tutors/new"
+              method="POST"
+              novalidate
+            >
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label
+                    class="form-label fw-semibold"
+                    for="name"
+                  >
+                    Tutor name
+                  </label>
+
+                  <input
+                    class="form-control form-control-lg"
+                    id="name"
+                    name="name"
+                    type="text"
+                    value="{{formData.name}}"
+                    minlength="2"
+                    maxlength="80"
+                    autocomplete="name"
+                    required
+                  >
+
+                  <div class="form-text">
+                    Enter the name displayed in the directory.
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label
+                    class="form-label fw-semibold"
+                    for="contactEmail"
+                  >
+                    Contact email
+                  </label>
+
+                  <input
+                    class="form-control form-control-lg"
+                    id="contactEmail"
+                    name="contactEmail"
+                    type="email"
+                    value="{{formData.contactEmail}}"
+                    maxlength="150"
+                    autocomplete="email"
+                    required
+                  >
+
+                  <div class="form-text">
+                    Students will use this address to contact the
+                    tutor.
+                  </div>
+                </div>
+
+                <div class="col-md-7">
+                  <label
+                    class="form-label fw-semibold"
+                    for="subject"
+                  >
+                    Subject
+                  </label>
+
+                  <input
+                    class="form-control form-control-lg"
+                    id="subject"
+                    name="subject"
+                    type="text"
+                    value="{{formData.subject}}"
+                    minlength="2"
+                    maxlength="100"
+                    placeholder="Example: JavaScript Frameworks"
+                    required
+                  >
+                </div>
+
+                <div class="col-md-5">
+                  <label
+                    class="form-label fw-semibold"
+                    for="courseCode"
+                  >
+                    Course code
+                  </label>
+
+                  <input
+                    class="form-control form-control-lg"
+                    id="courseCode"
+                    name="courseCode"
+                    type="text"
+                    value="{{formData.courseCode}}"
+                    minlength="3"
+                    maxlength="20"
+                    placeholder="Example: COMP 2068"
+                    required
+                  >
+
+                  <div class="form-text">
+                    The course code is stored in uppercase.
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label
+                    class="form-label fw-semibold"
+                    for="skills"
+                  >
+                    Tutoring skills
+                  </label>
+
+                  <input
+                    class="form-control form-control-lg"
+                    id="skills"
+                    name="skills"
+                    type="text"
+                    value="{{formData.skills}}"
+                    maxlength="250"
+                    placeholder="JavaScript, Express, debugging, REST APIs"
+                    required
+                  >
+
+                  <div class="form-text">
+                    Separate multiple skills with commas.
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label
+                    class="form-label fw-semibold"
+                    for="availability"
+                  >
+                    Availability
+                  </label>
+
+                  <input
+                    class="form-control form-control-lg"
+                    id="availability"
+                    name="availability"
+                    type="text"
+                    value="{{formData.availability}}"
+                    maxlength="150"
+                    placeholder="Example: Monday and Wednesday evenings"
+                    required
+                  >
+                </div>
+
+                <div class="col-md-6">
+                  <label
+                    class="form-label fw-semibold"
+                    for="location"
+                  >
+                    Location
+                  </label>
+
+                  <input
+                    class="form-control form-control-lg"
+                    id="location"
+                    name="location"
+                    type="text"
+                    value="{{formData.location}}"
+                    maxlength="100"
+                    placeholder="Example: Barrie Campus or Online"
+                    required
+                  >
+                </div>
+
+                <div class="col-md-6">
+                  <label
+                    class="form-label fw-semibold"
+                    for="tutoringFormat"
+                  >
+                    Tutoring format
+                  </label>
+
+                  <select
+                    class="form-select form-select-lg"
+                    id="tutoringFormat"
+                    name="tutoringFormat"
+                    required
+                  >
+                    <option value="">
+                      Select a format
+                    </option>
+
+                    <option
+                      value="Online"
+                      {{#if formData.isOnline}}selected{{/if}}
+                    >
+                      Online
+                    </option>
+
+                    <option
+                      value="In person"
+                      {{#if formData.isInPerson}}selected{{/if}}
+                    >
+                      In person
+                    </option>
+
+                    <option
+                      value="Hybrid"
+                      {{#if formData.isHybrid}}selected{{/if}}
+                    >
+                      Hybrid
+                    </option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label
+                    class="form-label fw-semibold"
+                    for="experienceLevel"
+                  >
+                    Experience level
+                  </label>
+
+                  <select
+                    class="form-select form-select-lg"
+                    id="experienceLevel"
+                    name="experienceLevel"
+                    required
+                  >
+                    <option value="">
+                      Select an experience level
+                    </option>
+
+                    <option
+                      value="Beginner"
+                      {{#if formData.isBeginner}}selected{{/if}}
+                    >
+                      Beginner
+                    </option>
+
+                    <option
+                      value="Intermediate"
+                      {{#if formData.isIntermediate}}selected{{/if}}
+                    >
+                      Intermediate
+                    </option>
+
+                    <option
+                      value="Advanced"
+                      {{#if formData.isAdvanced}}selected{{/if}}
+                    >
+                      Advanced
+                    </option>
+
+                    <option
+                      value="Expert"
+                      {{#if formData.isExpert}}selected{{/if}}
+                    >
+                      Expert
+                    </option>
+                  </select>
+                </div>
+
+                <div class="col-12">
+                  <label
+                    class="form-label fw-semibold"
+                    for="description"
+                  >
+                    Tutor description
+                  </label>
+
+                  <textarea
+                    class="form-control"
+                    id="description"
+                    name="description"
+                    rows="6"
+                    minlength="20"
+                    maxlength="600"
+                    placeholder="Describe the tutor's approach, strengths, and the academic support they provide."
+                    required
+                  >{{formData.description}}</textarea>
+
+                  <div class="form-text">
+                    Enter between 20 and 600 characters.
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="d-flex flex-column flex-sm-row gap-3 mt-5 pt-4 border-top"
+              >
+                <button
+                  class="btn btn-primary btn-lg tutor-primary-button"
+                  type="submit"
+                >
+                  Create Tutor Record
+                </button>
+
+                <a
+                  class="btn btn-outline-secondary btn-lg"
+                  href="/tutors/manage"
+                >
+                  Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div
+          class="directory-access-note"
+        >
+          <strong>
+            Public visibility:
+          </strong>
+
+          After the record is successfully saved, it will appear in
+          the public Tutor Directory and will be included in keyword
+          and fuzzy-search results.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

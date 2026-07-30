@@ -32,7 +32,7 @@ function createInitials(name) {
 /**
  * Format a MongoDB date for display in an HBS view.
  *
- * @param {Date|string} value Stored date value.
+ * @param {Date|string} value Stored date.
  * @returns {string} Human-readable date.
  */
 function formatDate(value) {
@@ -54,10 +54,161 @@ function formatDate(value) {
 }
 
 /**
- * Convert tutor records into plain view objects.
+ * Normalize a text form value.
  *
- * @param {Array<Object>} tutorRecords Tutor records from MongoDB.
- * @returns {Array<Object>} Tutor records prepared for HBS.
+ * @param {unknown} value Untrusted submitted value.
+ * @param {number} maximumLength Maximum accepted length.
+ * @returns {string} Trimmed text.
+ */
+function normalizeText(value, maximumLength) {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  return value
+    .trim()
+    .slice(0, maximumLength);
+}
+
+/**
+ * Normalize tutor form data before validation and storage.
+ *
+ * Only approved tutor fields are copied from req.body. This prevents
+ * unexpected submitted properties from being inserted into MongoDB.
+ *
+ * @param {Object} body Express request body.
+ * @returns {Object} Normalized tutor information.
+ */
+function normalizeTutorForm(body) {
+  return {
+    name: normalizeText(body.name, 80),
+
+    subject: normalizeText(
+      body.subject,
+      100
+    ),
+
+    courseCode: normalizeText(
+      body.courseCode,
+      20
+    ).toUpperCase(),
+
+    skills: normalizeText(
+      body.skills,
+      250
+    ),
+
+    availability: normalizeText(
+      body.availability,
+      150
+    ),
+
+    tutoringFormat: normalizeText(
+      body.tutoringFormat,
+      30
+    ),
+
+    location: normalizeText(
+      body.location,
+      100
+    ),
+
+    contactEmail: normalizeText(
+      body.contactEmail,
+      150
+    ).toLowerCase(),
+
+    experienceLevel: normalizeText(
+      body.experienceLevel,
+      30
+    ),
+
+    description: normalizeText(
+      body.description,
+      600
+    )
+  };
+}
+
+/**
+ * Prepare tutor form data for HBS.
+ *
+ * Boolean properties allow HBS to restore the selected dropdown
+ * options after a validation error without requiring a comparison
+ * helper.
+ *
+ * @param {Object} tutorData Normalized tutor data.
+ * @returns {Object} Tutor form view model.
+ */
+function prepareTutorFormData(tutorData) {
+  const data = tutorData || {};
+
+  return {
+    name: data.name || '',
+    subject: data.subject || '',
+    courseCode: data.courseCode || '',
+    skills: data.skills || '',
+    availability: data.availability || '',
+    tutoringFormat:
+      data.tutoringFormat || '',
+    location: data.location || '',
+    contactEmail:
+      data.contactEmail || '',
+    experienceLevel:
+      data.experienceLevel || '',
+    description:
+      data.description || '',
+
+    isOnline:
+      data.tutoringFormat === 'Online',
+
+    isInPerson:
+      data.tutoringFormat === 'In person',
+
+    isHybrid:
+      data.tutoringFormat === 'Hybrid',
+
+    isBeginner:
+      data.experienceLevel === 'Beginner',
+
+    isIntermediate:
+      data.experienceLevel === 'Intermediate',
+
+    isAdvanced:
+      data.experienceLevel === 'Advanced',
+
+    isExpert:
+      data.experienceLevel === 'Expert'
+  };
+}
+
+/**
+ * Convert Mongoose validation errors into readable messages.
+ *
+ * @param {Error} error Error returned by Mongoose.
+ * @returns {Array<string>} Validation messages.
+ */
+function getValidationMessages(error) {
+  if (
+    !error ||
+    error.name !== 'ValidationError' ||
+    !error.errors
+  ) {
+    return [];
+  }
+
+  return Object.keys(error.errors).map(
+    function (fieldName) {
+      return error.errors[fieldName].message;
+    }
+  );
+}
+
+/**
+ * Convert tutor database records into public view objects.
+ *
+ * @param {Array<Object>} tutorRecords Tutor records.
+ * @returns {Array<Object>} Public tutor view models.
  */
 function preparePublicTutors(tutorRecords) {
   return tutorRecords.map(function (tutor) {
@@ -69,10 +220,10 @@ function preparePublicTutors(tutorRecords) {
 }
 
 /**
- * Prepare tutor records for the authenticated management page.
+ * Prepare tutor records for the management dashboard.
  *
- * @param {Array<Object>} tutorRecords Tutor records from MongoDB.
- * @returns {Array<Object>} Management view records.
+ * @param {Array<Object>} tutorRecords Tutor records.
+ * @returns {Array<Object>} Management view models.
  */
 function prepareManagementTutors(tutorRecords) {
   return tutorRecords.map(function (tutor) {
@@ -86,18 +237,19 @@ function prepareManagementTutors(tutorRecords) {
       ...tutor,
       initials: createInitials(tutor.name),
       creatorName: creatorName,
-      createdDate: formatDate(tutor.createdAt),
-      updatedDate: formatDate(tutor.updatedAt)
+      createdDate:
+        formatDate(tutor.createdAt),
+      updatedDate:
+        formatDate(tutor.updatedAt)
     };
   });
 }
 
 /**
- * Escape characters that have a special meaning inside a regular
- * expression.
+ * Escape characters with special meanings in regular expressions.
  *
- * @param {string} value User-entered search value.
- * @returns {string} Escaped value.
+ * @param {string} value Search value.
+ * @returns {string} Escaped search value.
  */
 function escapeRegularExpression(value) {
   return value.replace(
@@ -107,13 +259,10 @@ function escapeRegularExpression(value) {
 }
 
 /**
- * Search original Tutor fields for direct text matches.
+ * Search stored Tutor fields for direct case-insensitive matches.
  *
- * Direct matching is used before fuzzy searching so exact course
- * codes and normal keywords return precise results.
- *
- * @param {string} searchTerm Search term entered by the visitor.
- * @returns {Promise<Array<Object>>} Matching tutor records.
+ * @param {string} searchTerm Visitor search term.
+ * @returns {Promise<Array<Object>>} Direct matches.
  */
 async function findDirectMatches(searchTerm) {
   const escapedSearchTerm =
@@ -163,11 +312,11 @@ async function findDirectMatches(searchTerm) {
 }
 
 /**
- * Use the instructor-required fuzzy-search package when a direct
- * search does not return any results.
+ * Use the instructor-required fuzzy-search package when no direct
+ * match is found.
  *
- * @param {string} searchTerm Search term entered by the visitor.
- * @returns {Promise<Array<Object>>} Fuzzy tutor matches.
+ * @param {string} searchTerm Visitor search term.
+ * @returns {Promise<Array<Object>>} Fuzzy matches.
  */
 async function findFuzzyMatches(searchTerm) {
   const fuzzyResults = await Tutor.fuzzySearch({
@@ -180,10 +329,6 @@ async function findFuzzyMatches(searchTerm) {
     .lean()
     .exec();
 
-  /*
-   * Remove zero-confidence results when the plugin supplies a numeric
-   * confidence score.
-   */
   return fuzzyResults.filter(function (tutor) {
     return (
       typeof tutor.confidenceScore !== 'number' ||
@@ -193,32 +338,36 @@ async function findFuzzyMatches(searchTerm) {
 }
 
 /**
- * Display the public, read-only tutor directory.
- *
- * Public examples:
- * /tutors
- * /tutors?search=javascript
- * /tutors?search=COMP%202068
+ * Display the public read-only tutor directory.
  */
 router.get('/', async function (req, res, next) {
   const searchTerm =
     typeof req.query.search === 'string'
-      ? req.query.search.trim().slice(0, 100)
+      ? req.query.search
+          .trim()
+          .slice(0, 100)
       : '';
 
-  const hasSearchInput = Boolean(searchTerm);
+  const hasSearchInput =
+    Boolean(searchTerm);
 
   const searchTooShort =
-    hasSearchInput && searchTerm.length < 2;
+    hasSearchInput &&
+    searchTerm.length < 2;
 
   try {
     let tutorRecords;
     let searchPerformed = false;
     let searchMethod = '';
 
-    if (hasSearchInput && !searchTooShort) {
+    if (
+      hasSearchInput &&
+      !searchTooShort
+    ) {
       tutorRecords =
-        await findDirectMatches(searchTerm);
+        await findDirectMatches(
+          searchTerm
+        );
 
       searchPerformed = true;
 
@@ -226,7 +375,9 @@ router.get('/', async function (req, res, next) {
         searchMethod = 'direct';
       } else {
         tutorRecords =
-          await findFuzzyMatches(searchTerm);
+          await findFuzzyMatches(
+            searchTerm
+          );
 
         searchMethod = 'fuzzy';
       }
@@ -240,71 +391,196 @@ router.get('/', async function (req, res, next) {
     }
 
     const tutors =
-      preparePublicTutors(tutorRecords);
+      preparePublicTutors(
+        tutorRecords
+      );
 
-    const resultCount = tutors.length;
+    const resultCount =
+      tutors.length;
 
-    return res.render('tutors/index', {
-      title: 'Tutor Directory',
-      tutors: tutors,
-      searchTerm: searchTerm,
-      hasSearchInput: hasSearchInput,
-      searchPerformed: searchPerformed,
-      searchTooShort: searchTooShort,
-      hasTutors: resultCount > 0,
-      searchMethod: searchMethod,
-      resultCount: resultCount,
-      resultCountText:
-        resultCount +
-        (resultCount === 1
-          ? ' tutor profile'
-          : ' tutor profiles')
-    });
+    return res.render(
+      'tutors/index',
+      {
+        title: 'Tutor Directory',
+        tutors: tutors,
+        searchTerm: searchTerm,
+        hasSearchInput:
+          hasSearchInput,
+        searchPerformed:
+          searchPerformed,
+        searchTooShort:
+          searchTooShort,
+        hasTutors:
+          resultCount > 0,
+        searchMethod:
+          searchMethod,
+        resultCount:
+          resultCount,
+        resultCountText:
+          resultCount +
+          (resultCount === 1
+            ? ' tutor profile'
+            : ' tutor profiles')
+      }
+    );
   } catch (error) {
     return next(error);
   }
 });
 
 /**
- * Display the authenticated tutor-management dashboard.
- *
- * This route is intentionally defined separately from the public
- * directory. Visitors must have a valid Passport login session.
+ * Display the protected tutor-management dashboard.
  */
 router.get(
   '/manage',
   ensureAuthenticated,
   async function (req, res, next) {
     try {
-      const tutorRecords = await Tutor.find()
-        .populate(
-          'createdBy',
-          'displayName'
-        )
-        .sort({
-          createdAt: -1,
-          name: 1
-        })
-        .lean()
-        .exec();
+      const tutorRecords =
+        await Tutor.find()
+          .populate(
+            'createdBy',
+            'displayName'
+          )
+          .sort({
+            createdAt: -1,
+            name: 1
+          })
+          .lean()
+          .exec();
 
       const tutors =
-        prepareManagementTutors(tutorRecords);
+        prepareManagementTutors(
+          tutorRecords
+        );
 
-      const tutorCount = tutors.length;
+      const tutorCount =
+        tutors.length;
 
-      return res.render('tutors/manage', {
-        title: 'Manage Tutors',
-        tutors: tutors,
-        hasTutors: tutorCount > 0,
-        tutorCount: tutorCount,
-        tutorCountText:
-          tutorCount +
-          (tutorCount === 1
-            ? ' tutor record'
-            : ' tutor records')
-      });
+      return res.render(
+        'tutors/manage',
+        {
+          title: 'Manage Tutors',
+          tutors: tutors,
+          hasTutors:
+            tutorCount > 0,
+          tutorCount:
+            tutorCount,
+          tutorCountText:
+            tutorCount +
+            (tutorCount === 1
+              ? ' tutor record'
+              : ' tutor records')
+        }
+      );
     } catch (error) {
+      return next(error);
+    }
+  }
+);
+
+/**
+ * Display the protected Create Tutor form.
+ */
+router.get(
+  '/new',
+  ensureAuthenticated,
+  function (req, res) {
+    return res.render(
+      'tutors/new',
+      {
+        title: 'Add Tutor',
+        formData:
+          prepareTutorFormData({}),
+        errors: []
+      }
+    );
+  }
+);
+
+/**
+ * Validate and create a tutor record.
+ */
+router.post(
+  '/new',
+  ensureAuthenticated,
+  async function (req, res, next) {
+    const normalizedTutor =
+      normalizeTutorForm(req.body);
+
+    const formData =
+      prepareTutorFormData(
+        normalizedTutor
+      );
+
+    try {
+      const tutor = new Tutor({
+        name:
+          normalizedTutor.name,
+
+        subject:
+          normalizedTutor.subject,
+
+        courseCode:
+          normalizedTutor.courseCode,
+
+        skills:
+          normalizedTutor.skills,
+
+        availability:
+          normalizedTutor.availability,
+
+        tutoringFormat:
+          normalizedTutor.tutoringFormat,
+
+        location:
+          normalizedTutor.location,
+
+        contactEmail:
+          normalizedTutor.contactEmail,
+
+        experienceLevel:
+          normalizedTutor.experienceLevel,
+
+        description:
+          normalizedTutor.description,
+
+        createdBy:
+          req.user._id
+      });
+
+      /*
+       * save() runs Tutor schema validation and the fuzzy-search
+       * plugin's document middleware before the record is stored.
+       */
+      await tutor.save();
+
+      req.session.successMessage =
+        'The tutor record for ' +
+        tutor.name +
+        ' was created successfully.';
+
+      return res.redirect(
+        '/tutors/manage'
+      );
+    } catch (error) {
+      const validationErrors =
+        getValidationMessages(error);
+
+      if (
+        validationErrors.length > 0
+      ) {
+        return res.status(400).render(
+          'tutors/new',
+          {
+            title: 'Add Tutor',
+            formData: formData,
+            errors:
+              validationErrors
+          }
+        );
+      }
+
       return next(error);
     }
   }
