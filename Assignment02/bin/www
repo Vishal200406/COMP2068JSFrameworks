@@ -1,50 +1,60 @@
 #!/usr/bin/env node
 
 /**
- * Load private environment variables before importing the application
- * or attempting to connect to MongoDB.
+ * Load private environment variables before loading the application
+ * or connecting to MongoDB.
  */
-require('dotenv').config();
+require('dotenv').config({
+  quiet: true
+});
 
-var app = require('../app');
 var debug = require('debug')('assignment02:server');
 var http = require('http');
 
 var connectToDatabase = require('../config/database');
 
 /**
- * Get the port from the environment and store it in Express.
+ * Get the port from the environment and normalize it.
  */
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+var port = normalizePort(
+  process.env.PORT || '3000'
+);
 
 /**
- * Create the HTTP server.
- */
-var server = http.createServer(app);
-
-/**
- * Register server event handlers before starting the application.
- */
-server.on('error', onError);
-server.on('listening', onListening);
-
-/**
- * Connect to MongoDB before accepting web requests.
+ * Connect to MongoDB before loading the Express application.
  *
- * The application exits when the database connection cannot be
- * established. This prevents the website from appearing operational
- * while its required database is unavailable.
+ * app.js configures the MongoDB-backed session store using the active
+ * Mongoose connection, so the database must be connected first.
  */
 async function startApplication() {
   try {
     await connectToDatabase();
 
-    console.log('MongoDB Atlas connected successfully.');
+    console.log(
+      'MongoDB Atlas connected successfully.'
+    );
+
+    /*
+     * Load the application only after Mongoose has established its
+     * connection. This lets connect-mongo reuse that connection.
+     */
+    var app = require('../app');
+
+    app.set('port', port);
+
+    var server = http.createServer(app);
+
+    server.on('error', function handleServerError(error) {
+      onError(error, port);
+    });
+
+    server.on('listening', function handleListening() {
+      onListening(server);
+    });
 
     server.listen(port);
   } catch (error) {
-    console.error('MongoDB connection failed:');
+    console.error('Application startup failed:');
     console.error(error.message);
 
     process.exit(1);
@@ -56,8 +66,8 @@ startApplication();
 /**
  * Normalize a port into a number, string, or false.
  *
- * @param {string} value Port supplied through the environment.
- * @returns {number|string|boolean} Normalized port value.
+ * @param {string} value Port value from the environment.
+ * @returns {number|string|boolean} Normalized port.
  */
 function normalizePort(value) {
   var parsedPort = parseInt(value, 10);
@@ -74,28 +84,35 @@ function normalizePort(value) {
 }
 
 /**
- * Handle HTTP server errors.
+ * Handle HTTP server startup errors.
  *
- * @param {NodeJS.ErrnoException} error Server startup error.
+ * @param {NodeJS.ErrnoException} error Server error.
+ * @param {number|string|boolean} activePort Active server port.
  */
-function onError(error) {
+function onError(error, activePort) {
   if (error.syscall !== 'listen') {
     throw error;
   }
 
   var bind =
-    typeof port === 'string'
-      ? 'Pipe ' + port
-      : 'Port ' + port;
+    typeof activePort === 'string'
+      ? 'Pipe ' + activePort
+      : 'Port ' + activePort;
 
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      console.error(
+        bind + ' requires elevated privileges.'
+      );
+
       process.exit(1);
       break;
 
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      console.error(
+        bind + ' is already in use.'
+      );
+
       process.exit(1);
       break;
 
@@ -105,9 +122,11 @@ function onError(error) {
 }
 
 /**
- * Report that the HTTP server has started successfully.
+ * Report that the HTTP server is listening.
+ *
+ * @param {http.Server} server Active HTTP server.
  */
-function onListening() {
+function onListening(server) {
   var address = server.address();
 
   var bind =
@@ -115,7 +134,11 @@ function onListening() {
       ? 'pipe ' + address
       : 'port ' + address.port;
 
-  console.log('TutorConnect Directory is running on ' + bind + '.');
+  console.log(
+    'TutorConnect Directory is running on ' +
+      bind +
+      '.'
+  );
 
   debug('Listening on ' + bind);
 }
