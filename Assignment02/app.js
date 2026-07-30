@@ -6,36 +6,64 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var tutorsRouter = require('./routes/tutors');
 
 var app = express();
 
-// view engine setup
+/**
+ * Configure the HBS view engine.
+ */
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
+/**
+ * Register application middleware.
+ */
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(
+  express.urlencoded({
+    extended: false
+  })
+);
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+/**
+ * Register application routes.
+ */
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/tutors', tutorsRouter);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+/**
+ * Catch requests that do not match an existing route and forward
+ * them to the error handler as a 404 error.
+ */
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
+/**
+ * Display the application error page.
+ */
+app.use(function (err, req, res, next) {
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
+  /*
+   * Detailed error information is displayed only during development.
+   * Production visitors receive the message without the stack trace.
+   */
+  res.locals.error =
+    req.app.get('env') === 'development'
+      ? err
+      : {};
+
   res.status(err.status || 500);
-  res.render('error');
+
+  res.render('error', {
+    title: 'Application Error'
+  });
 });
 
 module.exports = app;

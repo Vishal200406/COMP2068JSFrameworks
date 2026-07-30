@@ -1,0 +1,177 @@
+<section class="directory-hero">
+  <div class="container">
+    <div class="directory-heading">
+      <span class="section-label">Public directory</span>
+
+      <h1>Find a peer tutor</h1>
+
+      <p>
+        Search tutor profiles by name, subject, course code, academic
+        skill, location, availability, experience, or tutoring format.
+      </p>
+    </div>
+
+    <form
+      class="directory-search-form"
+      action="/tutors"
+      method="GET"
+      role="search"
+    >
+      <div class="search-field-wrapper">
+        <label class="visually-hidden" for="tutorSearch">
+          Search tutors
+        </label>
+
+        <span class="directory-search-icon" aria-hidden="true">
+          ⌕
+        </span>
+
+        <input
+          class="form-control directory-search-input"
+          id="tutorSearch"
+          name="search"
+          type="search"
+          value="{{searchTerm}}"
+          placeholder="Try JavaScript, COMP 2068, online, or algebra"
+          maxlength="100"
+        >
+      </div>
+
+      <button
+        class="btn btn-primary directory-search-button"
+        type="submit"
+      >
+        Search Tutors
+      </button>
+
+      {{#if hasSearch}}
+        <a class="btn directory-clear-button" href="/tutors">
+          Clear Search
+        </a>
+      {{/if}}
+    </form>
+  </div>
+</section>
+
+<section class="directory-content-section">
+  <div class="container">
+    <div class="directory-result-header">
+      <div>
+        {{#if hasSearch}}
+          <p class="directory-result-label">
+            Search results for
+          </p>
+
+          <h2 class="directory-result-title">
+            “{{searchTerm}}”
+          </h2>
+        {{else}}
+          <p class="directory-result-label">
+            Available peer tutors
+          </p>
+
+          <h2 class="directory-result-title">
+            Browse the directory
+          </h2>
+        {{/if}}
+      </div>
+
+      <span class="directory-result-count">
+        {{resultCount}} tutor profiles
+      </span>
+    </div>
+
+    {{#if hasTutors}}
+      <div class="row g-4">
+        {{#each tutors}}
+          <div class="col-md-6 col-xl-4">
+            <article class="public-tutor-card h-100">
+              <div class="public-tutor-card-header">
+                <div class="public-tutor-avatar" aria-hidden="true">
+                  {{name.[0]}}
+                </div>
+
+                <div class="public-tutor-heading">
+                  <h3>{{name}}</h3>
+                  <p>{{subject}}</p>
+                </div>
+
+                <span class="public-course-code">
+                  {{courseCode}}
+                </span>
+              </div>
+
+              <p class="public-tutor-description">
+                {{description}}
+              </p>
+
+              <dl class="public-tutor-details">
+                <div>
+                  <dt>Skills</dt>
+                  <dd>{{skills}}</dd>
+                </div>
+
+                <div>
+                  <dt>Availability</dt>
+                  <dd>{{availability}}</dd>
+                </div>
+
+                <div>
+                  <dt>Format</dt>
+                  <dd>{{tutoringFormat}}</dd>
+                </div>
+
+                <div>
+                  <dt>Location</dt>
+                  <dd>{{location}}</dd>
+                </div>
+
+                <div>
+                  <dt>Experience</dt>
+                  <dd>{{experienceLevel}}</dd>
+                </div>
+              </dl>
+
+              <div class="public-tutor-contact">
+                <span>Contact tutor</span>
+
+                <a href="mailto:{{contactEmail}}">
+                  {{contactEmail}}
+                </a>
+              </div>
+            </article>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="directory-empty-state">
+        <div class="directory-empty-icon" aria-hidden="true">
+          ?
+        </div>
+
+        <h2>No tutor profiles were found</h2>
+
+        {{#if hasSearch}}
+          <p>
+            Try a broader keyword, check the spelling, or clear the
+            current search to view the complete directory.
+          </p>
+
+          <a class="btn btn-primary" href="/tutors">
+            View All Tutors
+          </a>
+        {{else}}
+          <p>
+            Tutor profiles will appear here after they have been added.
+          </p>
+        {{/if}}
+      </div>
+    {{/if}}
+
+    <div class="directory-access-note">
+      <strong>Public access:</strong>
+      Visitors may browse and contact tutors without logging in.
+      Tutor-record management will be restricted to authenticated users.
+    </div>
+  </div>
+</section>
